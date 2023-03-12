@@ -14,12 +14,14 @@ import matplotlib.pyplot as plt
 import pygad
 import numpy as np
 
+
 import sys
 from pathlib import Path
 
 sys.path.append(str((Path(__file__) / ".." / ".." / "..").resolve().absolute()))
 
 from src.lab5.landscape import elevation_to_rgba
+from src.lab5.landscape import get_elevation
 
 
 def game_fitness(cities, idx, elevation, size):
@@ -30,6 +32,37 @@ def game_fitness(cities, idx, elevation, size):
     2. The cities should have a realistic distribution across the landscape
     3. The cities may also not be on top of mountains or on top of each other
     """
+  
+    c_stack = solution_to_cities(cities,size)
+
+    
+
+    for cs in c_stack:
+        #define current elevation of city in city stack
+        cur_el = elevation[cs[0]][cs[1]]
+        
+        #if city is in ideal elevation range increase fitness, else decrease
+        if(cur_el >= .3) and (cur_el <= .7):
+            fitness += .001
+        else:
+            fitness -= .001
+
+        
+        #for loop to check distances between all cities 
+        for cs2 in c_stack:
+            #get x and y distances
+            distace_x = abs(cs[0] - cs2[0])
+            distance_y = abs(cs[1] - cs2[1])
+            totaldist = distace_x + distance_y
+
+            #check coords and have cities far enough apart, at least 20 units
+            if totaldist >= 20:
+                fitness += .0001
+            else:
+                fitness -= .0001
+
+        
+
     return fitness
 
 
@@ -113,9 +146,9 @@ if __name__ == "__main__":
 
     size = 100, 100
     n_cities = 10
-    elevation = []
     """ initialize elevation here from your previous code"""
     # normalize landscape
+    elevation = get_elevation(size)
     elevation = np.array(elevation)
     elevation = (elevation - elevation.min()) / (elevation.max() - elevation.min())
     landscape_pic = elevation_to_rgba(elevation)
