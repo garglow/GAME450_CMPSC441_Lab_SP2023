@@ -1,6 +1,8 @@
 import pygame
 from pathlib import Path
 
+
+sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
 from sprite import Sprite
 from turn_combat import CombatPlayer, Combat
 from pygame_ai_player import PyGameAICombatPlayer
@@ -38,25 +40,38 @@ def run_pygame_combat(combat_surface, screen, player_sprite):
         AI_SPRITE_PATH, (player_sprite.sprite_pos[0] - 100, player_sprite.sprite_pos[1])
     )
 
-    players = [player, opponent]
+   
 
     # Main Game Loop
     while not currentGame.gameOver:
-        screen.blit(combat_surface, (0, 0))
-        player_sprite.draw_sprite(screen)
-        opponent_sprite.draw_sprite(screen)
-        text_surface = game_font.render(
+        draw_combat_on_screen(combat_surface, screen, player_sprite, opponent_sprite)
+
+        run_turn(currentGame, player, opponent)
+
+def run_turn(currentGame, player, opponent):
+    players = [player, opponent]
+    states = list(reversed([(player.health, player.weapon) for player in players]))
+    for current_player, state in zip(players, states):
+       current_player.selectAction(state)
+    #health and weapon of both, and action of player1 and reward
+    player1health  = player.health
+    player2health= opponent.health
+    player1weapon = player.weapon
+    
+    currentGame.newRound()
+    currentGame.takeTurn(player, opponent)
+    print("%s's health = %d" % (player.name, player.health))
+    print("%s's health = %d" % (opponent.name, opponent.health))
+    currentGame.checkWin(player, opponent)
+    reward = currentGame.checkWin(player,opponent)
+    return reward, player1health, player2health, player1weapon
+
+def draw_combat_on_screen(combat_surface, screen, player_sprite, opponent_sprite):
+    screen.blit(combat_surface, (0, 0))
+    player_sprite.draw_sprite(screen)
+    opponent_sprite.draw_sprite(screen)
+    text_surface = game_font.render(
             "Choose s-Sword a-Arrow f-Fire!", True, (0, 0, 150)
         )
-        screen.blit(text_surface, (50, 50))
-        pygame.display.update()
-
-        states = list(reversed([(player.health, player.weapon) for player in players]))
-        for current_player, state in zip(players, states):
-            current_player.selectAction(state)
-
-        currentGame.newRound()
-        currentGame.takeTurn(player, opponent)
-        print("%s's health = %d" % (player.name, player.health))
-        print("%s's health = %d" % (opponent.name, opponent.health))
-        currentGame.checkWin(player, opponent)
+    screen.blit(text_surface, (50, 50))
+    pygame.display.update()
