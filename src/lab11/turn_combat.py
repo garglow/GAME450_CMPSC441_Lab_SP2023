@@ -60,6 +60,7 @@ class Combat:
     def __init__(self):
         self.gameOver = False
         self.round = 0
+        self.reward = 0
 
     def newRound(self):
         self.round += 1
@@ -79,7 +80,9 @@ class Combat:
             self.gameOver = True
             print("*** Draw ***")
             return 0
-        return 0
+        else:
+            return 0
+
 
     def displayResult(self, player, opponent):
         print(

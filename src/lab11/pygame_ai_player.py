@@ -20,6 +20,5 @@ class PyGameAICombatPlayer(CombatPlayer):
         super().__init__(name)
 
     def weapon_selecting_strategy(self):
-        while True:
             self.weapon = random.randint(0,2)
             return self.weapon

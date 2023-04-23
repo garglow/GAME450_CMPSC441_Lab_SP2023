@@ -12,14 +12,17 @@ If you reward every action you may end up in a situation where the agent
 will always choose the action that gives the highest reward. Ironically,
 this may lead to the agent losing the game.
 '''
-import sys
+
 from pathlib import Path
+import sys
 
 # line taken from turn_combat.py
 sys.path.append(str((Path(__file__) / ".." / "..").resolve().absolute()))
 
 from lab11.pygame_combat import PyGameComputerCombatPlayer
 from lab11.turn_combat import CombatPlayer
+from lab11.pygame_ai_player import PyGameAICombatPlayer
+from lab11.pygame_ai_player import PyGameAIPlayer
 from lab12.episode import run_episode
 
 from collections import defaultdict
@@ -64,6 +67,7 @@ def get_history_returns(history):
     return returns
 
 
+
 def run_episodes(n_episodes):
     ''' Run 'n_episodes' random episodes and return the action values for each state-action pair.
         Action values are calculated as the average return for each state-action pair over the 'n_episodes' episodes.
@@ -74,6 +78,29 @@ def run_episodes(n_episodes):
         Return the action values as a dictionary of dictionaries where the keys are states and 
             the values are dictionaries of actions and their values.
     '''
+    action_values = {}
+    player = PyGameAICombatPlayer("player")
+    computer = PyGameComputerCombatPlayer("computer")
+
+    for episode in range(n_episodes):
+        # Play a random episode with the two players
+        game_history = run_random_episode(player, computer)
+
+        # Calculate the return for each state-action pair in the game history
+        for state, actions in get_history_returns(game_history).items():
+            if state not in action_values:
+                action_values[state] = {}
+
+            for action, reward in actions.items():
+                if action not in action_values[state]:
+                    action_values[state][action] = []
+
+                action_values[state][action].append(reward)
+
+    # Calculate the average return for each state-action pair
+    for state, actions in action_values.items():
+        for action, rewards in actions.items():
+            action_values[state][action] = (sum(rewards) / len(rewards))
 
     return action_values
 
